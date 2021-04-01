@@ -1,6 +1,9 @@
-# advanceBlogApp
+# sneak peek :advanceBlogApp
 
-## sneak peek
+- In this Advance Blog app: you can tag posts and be able to search it via tags \*
+- Postgres Database is used and SMTP Mail Client for sharing posts through email \*
+- Django debug is also added for debugging purposes \*
+- site map is also generated, so it can be completely indexed by any search engines \*
 
 ### landing page
 
@@ -8,7 +11,7 @@
 
 ### post details
 
-![picture](post_details.png)
+![picture](post_detail.png)
 
 ### search
 
