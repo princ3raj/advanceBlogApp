@@ -1,3 +1,4 @@
+from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from .models import Post
 from django.core.paginator import Paginator, EmptyPage, \
@@ -7,8 +8,8 @@ from .forms import EmailPostForm
 
 from django.core.mail import send_mail
 
-from .models import Post, Comment
-from .forms import EmailPostForm, CommentForm,SearchForm
+from .models import Post, Comment, Reply
+from .forms import EmailPostForm, CommentForm, SearchForm, ReplyForm, CreatePost
 from taggit.models import Tag
 from django.db.models import Count
 
@@ -28,7 +29,7 @@ class PostListView(ListView):
 # Create your views here.
 def post_list(request, tag_slug=None):
     object_list = Post.published.all()
-    tag=None
+    tag = None
     if tag_slug:
         tag = get_object_or_404(Tag, slug=tag_slug)
         object_list = object_list.filter(tags__in=[tag])
@@ -42,9 +43,8 @@ def post_list(request, tag_slug=None):
     except EmptyPage:
         # If page is out of range deliver last page of results
         posts = paginator.page(paginator.num_pages)
-  
 
-    return render(request, 'blog/post/list.html', {'page': page, 'posts': posts,'tag':tag})
+    return render(request, 'blog/post/list.html', {'page': page, 'posts': posts, 'tag': tag})
 
 
 def post_detail(request, year, month, day, post):
@@ -53,6 +53,23 @@ def post_detail(request, year, month, day, post):
 
     # List of active comments for this post
     comments = post.comments.filter(active=True)
+
+    lst = []
+    for comment in comments:
+        s = comment.reply_comment.filter(active=True)
+        lst.append(s)
+
+    # lst = []
+    # for dic_items in dic.items():
+    #     # print(type(dic_items[1]))
+    #     lst.append(dic_items[1])
+
+    print(lst)
+    # new_lst = []
+    # for key in lst:
+    #     for replies in key:
+    #         print(replies)
+
     new_comment = None
     if request.method == 'POST':
         # A comment was posted
@@ -60,7 +77,7 @@ def post_detail(request, year, month, day, post):
         if comment_form.is_valid():
             # Create Comment object but don't save to database yet
             new_comment = comment_form.save(commit=False)
-            # Assign the current post to the comment 
+            # Assign the current post to the comment
             new_comment.post = post
             # Save the comment to the database
             new_comment.save()
@@ -70,14 +87,13 @@ def post_detail(request, year, month, day, post):
     similar_posts = Post.published.filter(tags__in=post_tags_ids)\
                                   .exclude(id=post.id)
     similar_posts = similar_posts.annotate(same_tags=Count('tags'))\
-                                .order_by('-same_tags','-publish')[:4]
-    print(similar_posts.annotate(same_tags=Count('tags')))
-    a=similar_posts.annotate(num_book=Count('tags'))
-    a
+        .order_by('-same_tags', '-publish')[:4]
 
+    a = similar_posts.annotate(num_book=Count('tags'))
 
+    final_list = zip(comments, lst)
 
-    return render(request, 'blog/post/detail.html', {'post': post, 'comment_form': comment_form, 'comments': comments,'similar_posts': similar_posts})
+    return render(request, 'blog/post/detail.html', {'post': post, 'comment_form': comment_form, 'comments': comments, 'similar_posts': similar_posts, 'both_list': final_list})
 
 
 def post_share(request, post_id):
@@ -112,10 +128,50 @@ def post_search(request):
         if form.is_valid():
             query = form.cleaned_data['query']
             search_vector = SearchVector('title', weight='A') + \
-                            SearchVector('body', weight='B')
+                SearchVector('body', weight='B')
             search_query = SearchQuery(query)
 
             # results = Post.published.annotate(similarity=TrigramSimilarity('title', query), ).filter(similarity__gt=0.1).order_by('-similarity')
-            results = Post.published.annotate(search=search_vector,rank=SearchRank(search_vector,search_query)).filter(rank__gte=0.3).order_by('-rank')
-    return render(request,'blog/post/search.html',{'form': form,'query': query, 'results': results})
+            results = Post.published.annotate(search=search_vector, rank=SearchRank(
+                search_vector, search_query)).filter(rank__gte=0.3).order_by('-rank')
+    return render(request, 'blog/post/search.html', {'form': form, 'query': query, 'results': results})
 
+
+def reply(request, id):
+
+    form = ReplyForm()
+
+    if request.method == 'GET':
+
+        return render(request, 'blog/post/reply_comment.html', {'form': form, 'id': id})
+    else:
+
+        comment_object = Comment.objects.get(id=int(id))
+
+        reply_form = ReplyForm(data=request.POST)
+        if reply_form.is_valid():
+            # Create Comment object but don't save to database yet
+            new_reply = reply_form.save(commit=False)
+            # Assign the current post to the comment
+            new_reply.comment = comment_object
+            # Save the comment to the database
+            new_reply.save()
+
+        return HttpResponseRedirect('/blog/')
+
+
+def post_create(request):
+
+    if request.method == 'GET':
+        form = CreatePost()
+        return render(request, 'blog/post/create_post.html', {'form': form})
+    else:
+        post_form = CreatePost(data=request.POST)
+        if post_form.is_valid():
+            # Create Comment object but don't save to database yet
+            new_post = post_form.save(commit=False)
+            # Assign the current post to the comment
+            new_post.author = request.user
+            # Save the comment to the database
+            new_post.save()
+        return HttpResponseRedirect('/blog/')

@@ -1,0 +1,23 @@
+
+{% extends "blog/base.html" %}
+{% load bootstrap4 %}
+
+
+{% load blog_tags %}
+{% block title %}My Blog{% endblock %}
+{% block content %}
+
+
+
+<form action="" method="post">
+
+    {% csrf_token %}
+
+    {% bootstrap_form form %}
+
+    <br>
+
+    <button class="btn-primary" type="submit">Submit</button>
+
+</form>
+{% endblock %}

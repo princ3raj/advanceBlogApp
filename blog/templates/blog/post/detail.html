@@ -22,14 +22,44 @@
        {{ total_comments }} comment{{ total_comments|pluralize }}
      </h2>
     {% endwith %}
-    {% for comment in comments %} <div class="comment">
+
+
+
+
+    {% for comment,replies in both_list %} 
+    <div class="comment">
     <p class="info">
     Comment {{ forloop.counter }} by {{ comment.name }} {{ comment.created }}
     </p>
-    {{ comment.body|linebreaks }} </div>
+    {{ comment.body|linebreaks }}
+     <a href='{%  url 'blog:reply_comment' comment.id %}'>reply</a> 
+
+
+
+     {% for reply in replies %}
+     <div class="comment">
+
+        <p class="info">
+            Comment reply by {{ reply.name }} {{ reply.created }}
+        </p>
+        {{ reply.body|linebreaks }}
+        <a href='{%  url 'blog:reply_comment' comment.id %}'>reply</a> 
+
+     </div>
+     {% endfor %}
+
+
+   
+
+    
+    </div>
     {% empty %}
     <p>There are no comments yet.</p>
     {% endfor %}
+
+
+
+
     {% if new_comment %}
     <h2>Your comment has been added.</h2>
     {% else %}

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.sitemaps',
     'django.contrib.postgres',
     'blog.apps.BlogConfig',
+    'bootstrap4',
 ]
 
 MIDDLEWARE = [
@@ -140,7 +141,6 @@ EMAIL_HOST_PASSWORD = '*********'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-DEBUG_TOOLBAR_CONFIG={
-    'SHOW_TOOLBAR_CALLBACK':lambda x: True
+DEBUG_TOOLBAR_CONFIG = {
+    'SHOW_TOOLBAR_CALLBACK': lambda x: True
 }
-
