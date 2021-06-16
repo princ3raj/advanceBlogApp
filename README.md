@@ -13,6 +13,9 @@
 
 ![picture](post_detail.png)
 
+### Reply to Comments
+![picture](reply_comment.png)
+
 ### search
 
 ![picture](search.png)
@@ -28,3 +31,5 @@
 ### Share Posts
 
 ![picture](share_post.png)
+
+
