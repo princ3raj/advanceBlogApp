@@ -14,7 +14,7 @@
 ![picture](post_detail.png)
 
 ### Reply to Comments
-![picture](reply_comment.png)
+![picture](comment_reply.png)
 
 ### search
 
